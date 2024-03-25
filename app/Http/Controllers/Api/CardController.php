@@ -7,6 +7,7 @@ use App\Http\Requests\StoreCardRequest;
 use App\Http\Resources\CardResource;
 use App\Models\Card;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CardController extends Controller
 {
@@ -18,9 +19,20 @@ class CardController extends Controller
 
     public function store(StoreCardRequest $request)
     {
-        $Card = Card::create($request->validated());
-        return new CardResource($Card);
+
+        $userId = Auth::id();
+
+        // mergeuser_id into validated data
+        $validatedData = $request->validated();
+        $validatedData['user_id'] = $userId;
+
+
+        $card = Card::create($validatedData);
+
+        // Return new the CardResource
+        return new CardResource($card);
     }
+
 
     public function update(StoreCardRequest $request, Card $Card)
     {

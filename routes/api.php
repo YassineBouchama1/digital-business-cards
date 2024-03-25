@@ -11,6 +11,7 @@ Route::get('/user', function (Request $request) {
 
 
 
+// Route::post('/cards/create', [CardController::class, 'store'])->middleware('auth:sanctum');
 
 Route::apiResource('cards', CardController::class)->middleware('auth:sanctum');
 
