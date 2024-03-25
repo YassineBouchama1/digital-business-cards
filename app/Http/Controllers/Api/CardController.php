@@ -13,9 +13,12 @@ class CardController extends Controller
 {
     public function index()
     {
-        $Cards = Card::all();
-        return CardResource::collection($Cards);
+        $userId = Auth::id();
+        $cards = Card::where('user_id', $userId)->get();
+        return CardResource::collection($cards);
     }
+
+
 
     public function store(StoreCardRequest $request)
     {
@@ -34,15 +37,55 @@ class CardController extends Controller
     }
 
 
-    public function update(StoreCardRequest $request, Card $Card)
+    public function update(StoreCardRequest $request, $id)
     {
-        $Card->update($request->validated());
-        return new CardResource($Card);
+
+        $card = Card::find($id);
+        if (!$card) {
+            return response()->json(['error' => 'Card not found.'], 404);
+        }
+
+        //chekc with policies
+        if ($request->user()->cannot('update', $card)) {
+            abort(403);
+        }
+
+
+        $card->update($request->validated());
+        return new CardResource($card);
     }
 
-    public function destroy(Card $Card)
+
+    public function show(Request $request, $id)
     {
-        $Card->delete();
+        $card = Card::find($id);
+        if (!$card) {
+            return response()->json(['error' => 'Card not found.'], 404);
+        }
+
+        //chekc with policies
+        if ($request->user()->cannot('view', $card)) {
+            abort(403);
+        }
+
+        return $card;
+    }
+
+
+
+    public function destroy(Request $request, $id)
+    {
+        $card = Card::find($id);
+        if (!$card) {
+            return response()->json(['error' => 'Card not found.'], 404);
+        }
+
+        //chekc with policies
+        if ($request->user()->cannot('delete', $card)) {
+            abort(403);
+        }
+
+        $card->delete();
         return response(null, 204);
     }
 }
